@@ -64,6 +64,13 @@
             background-color: #ffd700; /* Gold */
         }
 
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 600px) {
+            .category-buttons button {
+                width: calc(45% - 10px); /* Allow for two buttons per row on smaller screens */
+            }
+        }
+
         .question-count-select {
             margin-bottom: 20px;
         }
