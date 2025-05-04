@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: sans-serif;
-            background-color: #f0f8ff; /* Light Blue */
+            background-color: #e0f7fa; /* Light Cyan */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -27,7 +27,7 @@
         }
 
         h1 {
-            color: #ff69b4; /* Hot Pink */
+            color: #9c27b0; /* Purple */
             margin-bottom: 30px;
             font-size: 2.5em;
         }
@@ -38,14 +38,14 @@
 
         .category-buttons {
             display: flex;
-            flex-wrap: wrap; /* Important for wrapping to the next line */
-            justify-content: center; /* Center the buttons horizontally */
-            gap: 10px; /* Space between buttons */
+            flex-direction: column; /* Stack buttons vertically */
+            align-items: center; /* Center buttons horizontally */
+            gap: 0; /* Remove gap in column layout */
             margin-bottom: 20px;
         }
 
         .category-buttons button {
-            background-color: #daa520; /* Goldenrod */
+            background-color: #2196f3; /* Blue */
             color: white;
             padding: 12px 15px; /* Slightly adjust horizontal padding */
             border: none;
@@ -53,22 +53,17 @@
             font-size: 1em;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            /* Force a maximum width to help with the 5-in-a-row layout */
-            /* Adjust this width based on the actual width of your game container */
-            width: calc(20% - 10px); /* Roughly 1/5th of the container width minus the gap */
+            width: 60%; /* Make buttons 60% width */
             box-sizing: border-box; /* Include padding and border in the element's total width and height */
-            flex-grow: 0; /* Prevent buttons from growing to fill extra space */
+            margin-bottom: 10px; /* Add space between stacked buttons */
         }
 
         .category-buttons button:hover {
-            background-color: #ffd700; /* Gold */
+            background-color: #1976d2; /* Darker Blue */
         }
 
-        /* Responsive adjustments for smaller screens */
-        @media (max-width: 600px) {
-            .category-buttons button {
-                width: calc(45% - 10px); /* Allow for two buttons per row on smaller screens */
-            }
+        .category-buttons button:last-child {
+            margin-bottom: 0; /* Remove bottom margin from the last button */
         }
 
         .question-count-select {
@@ -78,7 +73,7 @@
         .question-count-select label {
             font-size: 1.1em;
             margin-right: 10px;
-            color: #8a2be2; /* Blue Violet */
+            color: #673ab7; /* Deep Purple */
             font-weight: bold;
         }
 
@@ -90,7 +85,7 @@
         }
 
         .quit-button {
-            background-color: #dc143c; /* Crimson */
+            background-color: #673ab7; /* Deep Purple */
             color: white;
             padding: 10px 20px;
             border: none;
@@ -102,11 +97,11 @@
         }
 
         .quit-button:hover {
-            background-color: #ff4d6d; /* Tomato */
+            background-color: #512da8; /* Darker Deep Purple */
         }
 
         .question-area {
-            background-color: #e0ffff; /* Light Cyan */
+            background-color: #ede7f6; /* Very Light Purple */
             padding: 30px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -114,7 +109,7 @@
 
         .definition {
             font-size: 1.4em;
-            color: #2e8b57; /* Sea Green */
+            color: #311b92; /* Dark Purple */
             margin-bottom: 20px;
             font-weight: bold;
         }
@@ -127,8 +122,8 @@
         }
 
         .option-button {
-            background-color: #98fb98; /* Pale Green */
-            color: #191970; /* Midnight Blue */
+            background-color: #bbdefb; /* Light Blue */
+            color: #1a237e; /* Dark Blue */
             border: none;
             border-radius: 8px;
             padding: 15px;
@@ -139,7 +134,7 @@
         }
 
         .option-button:hover {
-            background-color: #adff2f; /* Green Yellow */
+            background-color: #90caf9; /* Lighter Blue */
         }
 
         .feedback {
@@ -149,36 +144,36 @@
         }
 
         .correct {
-            color: green;
+            color: #00796b; /* Teal */
         }
 
         .incorrect {
-            color: red;
+            color: #d81b60; /* Pink */
         }
 
         .score {
             font-size: 1.3em;
             margin-top: 20px;
-            color: #ffa07a; /* Light Salmon */
+            color: #7b1fa2; /* Medium Purple */
         }
 
         .loading {
             font-size: 1.2em;
             font-style: italic;
-            color: #808080; /* Gray */
+            color: #9e9e9e; /* Gray */
         }
 
         .game-over {
             font-size: 1.5em;
             font-weight: bold;
-            color: #ff8c00; /* Dark Orange */
+            color: #0288d1; /* Light Blue */
             margin-top: 30px;
         }
 
         .final-score {
             font-size: 1.3em;
             margin-top: 10px;
-            color: #4169e1; /* Royal Blue */
+            color: #1565c0; /* Darker Blue */
         }
 
         .achievement-emoji {
