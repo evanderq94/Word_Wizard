@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Wizard! 🧙‍♂️📚✨</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f8ff; /* Light Blue */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #ff69b4; /* Hot Pink */
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .category-select {
+            margin-bottom: 30px;
+        }
+
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Important for wrapping to the next line */
+            justify-content: center; /* Center the buttons horizontally */
+            gap: 10px; /* Space between buttons */
+            margin-bottom: 20px;
+        }
+
+        .category-buttons button {
+            background-color: #daa520; /* Goldenrod */
+            color: white;
+            padding: 12px 15px; /* Slightly adjust horizontal padding */
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            /* Force a maximum width to help with the 5-in-a-row layout */
+            /* Adjust this width based on the actual width of your game container */
+            width: calc(20% - 10px); /* Roughly 1/5th of the container width minus the gap */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            flex-grow: 0; /* Prevent buttons from growing to fill extra space */
+        }
+
+        .category-buttons button:hover {
+            background-color: #ffd700; /* Gold */
+        }
+
+        .question-count-select {
+            margin-bottom: 20px;
+        }
+
+        .question-count-select label {
+            font-size: 1.1em;
+            margin-right: 10px;
+            color: #8a2be2; /* Blue Violet */
+            font-weight: bold;
+        }
+
+        .question-count-select select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        .quit-button {
+            background-color: #dc143c; /* Crimson */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .quit-button:hover {
+            background-color: #ff4d6d; /* Tomato */
+        }
+
+        .question-area {
+            background-color: #e0ffff; /* Light Cyan */
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .definition {
+            font-size: 1.4em;
+            color: #2e8b57; /* Sea Green */
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-button {
+            background-color: #98fb98; /* Pale Green */
+            color: #191970; /* Midnight Blue */
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+        }
+
+        .option-button:hover {
+            background-color: #adff2f; /* Green Yellow */
+        }
+
+        .feedback {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        .score {
+            font-size: 1.3em;
+            margin-top: 20px;
+            color: #ffa07a; /* Light Salmon */
+        }
+
+        .loading {
+            font-size: 1.2em;
+            font-style: italic;
+            color: #808080; /* Gray */
+        }
+
+        .game-over {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ff8c00; /* Dark Orange */
+            margin-top: 30px;
+        }
+
+        .final-score {
+            font-size: 1.3em;
+            margin-top: 10px;
+            color: #4169e1; /* Royal Blue */
+        }
+
+        .achievement-emoji {
+            font-size: 3em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Word Wizard! 🧙‍♂️📚✨</h1>
+
+        <div class="category-select">
+            <h2>Pick Your Theme! 🎨📚🤔😂</h2>
+            <div class="category-buttons">
+                <button onclick="startGame('philosophical')">Philosophy 🤔</button>
+                <button onclick="startGame('science')">Science 📚</button>
+                <button onclick="startGame('emotion')">Emotion 😊</button>
+                <button onclick="startGame('psychology')">Psychology 🧠</button>
+                <button onclick="startGame('adjectives')">Adjectives ✨</button>
+                <button onclick="startGame('academicVocabulary')">Academic Vocabulary 🎓</button>
+                <button onclick="startGame('vocabulary')">Vocabulary 📚</button>
+                <button onclick="startGame('finance')">Finance 💰</button>
+				
+            </div>
+            <div class="question-count-select">
+                <label for="questionCount">Number of Questions:</label>
+                <select id="questionCount">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="35">35</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="game-area" style="display: none;">
+            <div class="question-area">
+                <p class="definition" id="definition"></p>
+                <p class="loading" id="loading-message" style="display: none;">Loading word...</p>
+            </div>
+            <div class="options-grid" id="options-container">
+                </div>
+            <p class="feedback" id="feedback"></p>
+            <p class="score" id="score">Score: 0</p>
+            <button class="quit-button" onclick="resetGame()">Quit / Home 🏠</button>
+        </div>
+
+        <div id="game-over-area" style="display: none;">
+            <h2 class="game-over">🎉 Game Over! 🎉</h2>
+            <p class="final-score" id="final-score">Your final score: 0</p>
+            <p class="achievement-emoji" id="achievement-emoji"></p>
+            <button onclick="resetGame()">Play Again? 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const gameArea = document.getElementById('game-area');
+        const gameOverArea = document.getElementById('game-over-area');
+        const definitionElement = document.getElementById('definition');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackElement = document.getElementById('feedback');
+        const scoreElement = document.getElementById('score');
+        const categorySelect = document.querySelector('.category-select');
+        const loadingMessage = document.getElementById('loading-message');
+        const questionCountSelect = document.getElementById('questionCount');
+        const finalScoreElement = document.getElementById('final-score');
+        const achievementEmojiElement = document.getElementById('achievement-emoji');
+
+        let currentQuestion;
+        let score = 0;
+        let currentCategory = null;
+        let askedWords = new Set(); // To avoid repeating the exact same word too quickly
+        let totalQuestions = 0;
+        let questionsAnswered = 0;
+
+        const categorizedWordLists = {
+            "philosophical": [
+                { word: "Metaphysics", definitions: ["The branch of philosophy that deals with the first principles of things..."] },
+                { word: "Epistemology", definitions: ["The theory of knowledge, especially with regard to its methods..."] },
+                { word: "Ethics", definitions: ["Moral principles that govern a person's behavior..."] },
+                { word: "Logic", definitions: ["The study of reasoning; the science that evaluates arguments."] },
+                { word: "Ontology", definitions: ["The branch of metaphysics dealing with the nature of being."] },
+                { word: "Axiom", definitions: ["A statement or proposition that is regarded as being established..."] },
+                { word: "Contingent", definitions: ["True by accident; neither necessary nor impossible."] },
+                { word: "Empirical", definitions: ["Based on, concerned with, or verifiable by observation..."] },
+                { word: "Immutable", definitions: ["Unchanging over time or unable to be changed."] },
+                { word: "Innate", definitions: ["Inborn; natural."] },
+                { word: "Intuition", definitions: ["The ability to understand something instinctively..."] },
+                { word: "Justification", definitions: ["The action of showing something to be right or reasonable."] },
+                { word: "Noumenal", definitions: ["Relating to things as they are in themselves..."] },
+                { word: "Objective", definitions: ["Not influenced by personal feelings or opinions; factual."] },
+                { word: "Paradigm", definitions: ["A typical example or pattern of something; a model."] },
+                { word: "Postulate", definitions: ["A thing claimed or assumed true as the basis for reasoning..."] },
+                { word: "Premise", definitions: ["A previous statement or proposition from which another is inferred..."] },
+                { word: "Qualia", definitions: ["The internal and subjective component of sense perceptions..."] },
+                { word: "Reductio ad absurdum", definitions: ["A method of proving the falsity of a premise by showing that..."] },
+                { word: "Sublation", definitions: ["A term used in Hegelian philosophy to describe the process by which..."] },
+                { word: "Teleological", definitions: ["Relating to or involving the explanation of phenomena in terms of..."] },
+                { word: "Transcendent", definitions: ["Going beyond the limits of ordinary experience."] },
+                { word: "Veracity", definitions: ["Conformity to facts; accuracy."] },
+                { word: "Weltanschauung", definitions: ["A particular philosophy or view of life; the world view..."] },
+                { word: "Zeitgeist", definitions: ["The general intellectual, moral, and cultural climate of an era."] },
+				{ word: "Ambiguity", definitions: ["The quality of being open to more than one interpretation; inexactness."] },
+                { word: "Coherence", definitions: ["The quality of forming a unified whole."] },
+                { word: "Correspondence theory", definitions: ["The view that the truth or falsity of a statement is determined only by how it relates to the world and whether it accurately describes that world."] },
+                { word: "Epistemic", definitions: ["Relating to knowledge or the theory of knowledge; relating to epistemology."] },
+                { word: "Fallibilism", definitions: ["The principle that human beings could be wrong about their beliefs, expectations, or their understanding of the world, and yet still be justified in holding them."] },
+                { word: "Hermeneutic circle", definitions: ["The idea that one's understanding of a text as a whole is dependent on one's understanding of its individual parts, and vice versa."] },
+                { word: "Logical necessity", definitions: ["A necessity arising from logic; a proposition that cannot be false without involving a contradiction."] },
+                { word: "Moral relativism", definitions: ["The view that moral judgments are true or false only relative to some particular standpoint (for instance, that of a culture, a historical period, or any other frame of reference)."] },
+                { word: "Normative", definitions: ["Establishing, relating to, or deriving from a standard or norm, especially of behavior."] },
+                { word: "Ontological argument", definitions: ["An argument that claims to prove God's existence by appealing to the very concept of God."] },
+                { word: "Pragmatism", definitions: ["A philosophical tradition that considers words and thought as tools and instruments for prediction, problem solving, and action, and rejects the idea that the function of thought is to describe, represent, or mirror reality."] },
+                { word: "Rationality", definitions: ["The quality of being based on or in accordance with reason or logic."] },
+                { word: "Skeptic", definitions: ["A person inclined to question or doubt all accepted opinions."] },
+                { word: "Substance dualism", definitions: ["A philosophical view that mind and matter are two fundamentally different kinds of substances."] },
+                { word: "Tautology", definitions: ["A statement that is true by virtue of its logical form alone."] }
+             ],
+            "science": [
+			    { word: "Photosynthesis", definitions: ["The process by which green plants use sunlight to synthesize foods..."] },
+			    { word: "Gravity", definitions: ["The force that attracts objects with mass toward each other..."] },
+				{ word: "Atom", definitions: ["The basic unit of a chemical element."] },
+				{ word: "Molecule", definitions: ["A group of atoms bonded together."] },
+                { word: "Evolution", definitions: ["The process of change in the inherited characteristics of biological populations over successive generations."] },
+                { word: "Cell", definitions: ["The basic structural and functional unit of all living organisms."] },
+                { word: "Ecosystem", definitions: ["A biological community of interacting organisms and their physical environment."] },
+				{ word: "Thermodynamics", definitions: ["The branch of physics that deals with heat and its relation to other forms of energy and work."] },
+				{ word: "Quantum mechanics", definitions: ["The branch of physics dealing with the behavior of matter and energy on the scale of atoms and subatomic particles."] },
+				{ word: "Genetics", definitions: ["The study of heredity and the variation of inherited characteristics."] },
+				{ word: "Astronomy", definitions: ["The branch of science that deals with celestial objects, space, and the physical universe as a whole."] },
+                { word: "Geology", definitions: ["The science that deals with the physical structure and substance of the earth, its history, and the processes that act on it."] },
+                { word: "Hydrology", definitions: ["The branch of science concerned with the properties of the earth's water, especially its movement in relation to land and air."] },
+                { word: "Meteorology", definitions: ["The branch of science concerned with the processes and phenomena of the atmosphere, especially as a means of forecasting the weather."] },
+                { word: "Botany", definitions: ["The scientific study of plants."] },
+                { word: "Zoology", definitions: ["The scientific study of animals."] },
+                { word: "Microbiology", definitions: ["The branch of science that deals with microorganisms."] },
+                { word: "Virology", definitions: ["The branch of biology that studies the viruses and virus-like agents."] },
+                { word: "Paleontology", definitions: ["The branch of science concerned with fossil animals and plants."] },
+                { word: "Biochemistry", definitions: ["The branch of science concerned with the chemical and physicochemical processes that occur within living organisms."] },
+				{ word: "Catalyst", definitions: ["A substance that increases the rate of a chemical reaction without itself undergoing any permanent chemical change."] },
+                { word: "Chromosome", definitions: ["A thread-like structure of nucleic acids and protein found in the nucleus of most living cells, carrying genetic information in the form of genes."] },
+                { word: "Convection", definitions: ["The transfer of heat by the movement of a fluid (liquid or gas)."] },
+                { word: "Density", definitions: ["The degree of compactness of a substance."] },
+                { word: "Diffusion", definitions: ["The net movement of anything (for example, atoms, ions, molecules) from a region of higher concentration to a region of lower concentration."] },
+                { word: "Enzyme", definitions: ["A substance produced by a living organism which acts as a catalyst to bring about a specific biochemical reaction."] },
+                { word: "Friction", definitions: ["The resistance that one surface or object encounters when moving over another."] },
+                { word: "Inertia", definitions: ["The tendency of an object to resist a change in its state of motion."] },
+                { word: "Isotope", definitions: ["Each of two or more forms of the same element that contain equal numbers of protons but different numbers of neutrons in their nuclei, and hence differ in relative atomic mass but not in chemical properties; in particular, a radioactive form of an element."] },
+                { word: "Kinetic energy", definitions: ["Energy that a body possesses by virtue of being in motion."] },
+                { word: "Ligament", definitions: ["A short band of tough, flexible, fibrous connective tissue that connects two bones or cartilages or holds together a joint."] },
+                { word: "Mutation", definitions: ["The changing of the structure of a gene, resulting in a variant form that may be transmitted to subsequent generations, caused by the alteration of single base units in DNA, or the deletion, insertion, or rearrangement of larger sections of genes or chromosomes."] },
+                { word: "Osmosis", definitions: ["A process by which molecules of a solvent tend to pass through a semipermeable membrane from a less concentrated solution into a more concentrated one, thus equalizing the concentrations on each side of the membrane."] },
+                { word: "pH", definitions: ["A measure of the acidity or basicity of an aqueous solution."] },
+                { word: "Polymer", definitions: ["A substance that has a molecular structure consisting chiefly or entirely of a large number of similar units bonded together."] },
+                { word: "Radiation", definitions: ["The emission of energy as electromagnetic waves or as moving subatomic particles, especially high-energy ones."] },
+                { word: "Respiration", definitions: ["The process in living organisms involving the production of energy, typically with the intake of oxygen and the release of carbon dioxide from the oxidation of complex organic substances."] },
+                { word: "Sedimentary rock", definitions: ["Rock that has formed from the deposition of sediment at the bottom of bodies of water and on land."] },
+                { word: "Tectonic plates", definitions: ["Massive, irregularly shaped slabs of solid rock, generally composed of both continental and oceanic lithosphere."] },
+                { word: "Vaccine", definitions: ["A substance used to stimulate the production of antibodies and provide immunity against one or several diseases, prepared from the causative agent of a disease, its products, or a synthetic substitute, treated to act as an antigen without inducing the disease."] }
+			 ],
+            "emotion": [
+		    	{ word: "Joy", definitions: ["A feeling of great pleasure and happiness."] },
+                { word: "Sadness", definitions: ["The feeling of sorrow or unhappiness."] },
+                { word: "Anger", definitions: ["A strong feeling of annoyance, displeasure, or hostility."] },
+                { word: "Fear", definitions: ["An unpleasant emotion caused by the belief that someone or something is dangerous, likely to cause pain, or a threat."] },
+                { word: "Surprise", definitions: ["A feeling of mild astonishment or shock caused by something unexpected."] },
+                { word: "Disgust", definitions: ["A feeling of revulsion or strong disapproval aroused by something unpleasant or offensive."] },
+                { word: "Happiness", definitions: ["The state of being happy."] },
+                { word: "Frustration", definitions: ["The feeling of being upset or annoyed as a result of being unable to change or achieve something."] },
+                { word: "Excitement", definitions: ["A feeling of great enthusiasm and eagerness."] },
+                { word: "Anxiety", definitions: ["A feeling of worry, nervousness, or unease, typically about an imminent event or something with an uncertain outcome."] },
+                { word: "Shame", definitions: ["A painful feeling of humiliation or distress caused by the consciousness of wrong or foolish behavior."] },
+                { word: "Guilt", definitions: ["The fact of having committed an offense or crime."] },
+                { word: "Pride", definitions: ["A feeling of deep pleasure or satisfaction derived from one's own achievements, the achievements of those with whom one is closely associated, or from qualities or possessions that one widely admires."] },
+                { word: "Jealousy", definitions: ["The feeling of envy and resentment of someone else's possessions, qualities, or luck."] },
+                { word: "Love", definitions: ["An intense feeling of deep affection."] },
+                { word: "Hope", definitions: ["A feeling of expectation and desire for a certain thing to happen."] },
+                { word: "Despair", definitions: ["The complete loss or absence of hope."] },
+                { word: "Embarrassment", definitions: ["A feeling of self-consciousness, shame, or awkwardness."] },
+                { word: "Nostalgia", definitions: ["A sentimental longing or wistful affection for the past."] },
+                { word: "Contentment", definitions: ["A state of happiness and satisfaction."] },
+				{ word: "Awe", definitions: ["A feeling of reverential respect mixed with fear or wonder."] },
+                { word: "Bewilderment", definitions: ["The state of being confused or puzzled."] },
+                { word: "Compassion", definitions: ["Sympathetic pity and concern for the sufferings or misfortunes of others."] },
+                { word: "Contempt", definitions: ["The feeling that a person or a thing is beneath consideration, worthless, or deserving scorn."] },
+                { word: "Curiosity", definitions: ["A strong desire to know or learn something."] },
+                { word: "Disappointment", definitions: ["Sadness or displeasure caused by the nonfulfillment of one's hopes or expectations."] },
+                { word: "Distress", definitions: ["Extreme anxiety, sorrow, or pain."] },
+                { word: "Ecstasy", definitions: ["An overwhelming feeling of great happiness or joyful excitement."] },
+                { word: "Envy", definitions: ["A feeling of discontented or resentful longing aroused by someone else's possessions, qualities, or luck."] },
+                { word: "Gratitude", definitions: ["The quality of being thankful; readiness to show appreciation for and to return kindness."] },
+                { word: "Homesickness", definitions: ["A feeling of longing for one's home during a period of absence from it."] },
+                { word: "Humiliation", definitions: ["The feeling of being made to look foolish or lose dignity; shame."] },
+                { word: "Irritation", definitions: ["The state of being annoyed, frustrated, or angry."] },
+                { word: "Longing", definitions: ["A strong desire or craving."] },
+                { word: "Panic", definitions: ["Sudden uncontrollable fear or anxiety, often producing wild behavior or irrational thought."] },
+                { word: "Regret", definitions: ["A feeling of sorrow or remorse for a past act, circumstance, or failure to act."] },
+                { word: "Serenity", definitions: ["The state of being calm, peaceful, and untroubled."] },
+                { word: "Sorrow", definitions: ["A feeling of deep distress caused by loss, disappointment, or other misfortune suffered by oneself or others."] },
+                { word: "Tenderness", definitions: ["Gentleness and concern or sympathy."] },
+                { word: "Vulnerability", definitions: ["The state of being exposed to the possibility of being attacked or harmed, either physically or emotionally."] }
+			], 
+            "psychology": [
+		    	{ word: "Cognition", definitions: ["The mental action or process of acquiring knowledge and understanding through thought, experience, and the senses."] },
+                { word: "Behaviorism", definitions: ["A theoretical perspective in psychology that emphasizes the role of learning and environmental factors in shaping human and animal behavior."] },
+                { word: "Psychoanalysis", definitions: ["A system of psychological theory and therapy which aims to treat mental disorders by investigating the interaction of conscious and unconscious elements in the mind and bringing repressed fears and conflicts into the conscious mind by techniques such as dream interpretation and free association."] },
+                { word: "Cognitive dissonance", definitions: ["The state of having inconsistent thoughts, beliefs, or attitudes, especially as relating to behavioral decisions and attitude change."] },
+                { word: "Perception", definitions: ["The ability to see, hear, or become aware of something through the senses."] },
+                { word: "Memory", definitions: ["The faculty by which the mind stores and remembers information."] },
+                { word: "Learning", definitions: ["The acquisition of knowledge or skills through experience, study, or being taught."] },
+                { word: "Motivation", definitions: ["The general desire or willingness of someone to do something."] },
+                { word: "Personality", definitions: ["The combination of characteristics or qualities that form an individual's distinctive character."] },
+                { word: "Consciousness", definitions: ["The state of being aware of and responsive to one's surroundings."] },
+                { word: "Subconscious", definitions: ["The part of the mind that is not fully aware but which influences one's actions and feelings."] },
+                { word: "Id", definitions: ["In psychoanalytic theory, the primitive and instinctual part of the mind that contains sexual and aggressive drives and hidden memories."] },
+                { word: "Ego", definitions: ["In psychoanalytic theory, the part of the mind that mediates between the conscious and the unconscious and is responsible for reality testing and a sense of personal identity."] },
+                { word: "Superego", definitions: ["In psychoanalytic theory, the part of a person's mind that acts as a self-critical conscience, reflecting social standards learned from parents and teachers."] },
+                { word: "Defense mechanism", definitions: ["A mental process (e.g., repression, denial) initiated, typically unconsciously, to avoid conscious conflict or anxiety."] },
+                { word: "Classical conditioning", definitions: ["A learning process in which an association is made between a neutral stimulus and a naturally eliciting stimulus."] },
+                { word: "Operant conditioning", definitions: ["A type of learning in which behavior is strengthened if followed by a reinforcer or diminished if followed by a punisher."] },
+                { word: "Schema", definitions: ["A cognitive framework or concept that helps organize and interpret information."] },
+                { word: "Bias", definitions: ["A tendency to lean in a certain direction, often in an unfair way."] },
+                { word: "Stress", definitions: ["A state of mental or emotional strain or tension resulting from adverse or demanding circumstances."] },
+				{ word: "Attachment theory", definitions: ["A psychological model that attempts to describe the dynamics of long-term and short-term interpersonal relationships between humans."] },
+                { word: "Cognitive behavioral therapy (CBT)", definitions: ["A type of psychotherapy in which negative patterns of thought about the self and the world are challenged in order to alter unwanted behavior patterns or treat mood disorders such as depression."] },
+                { word: "Developmental psychology", definitions: ["The scientific study of how and why human beings change over the course of their life."] },
+                { word: "Extroversion", definitions: ["The quality of being outgoing and directing attention to things rather than to one's own thoughts and feelings."] },
+                { word: "Gestalt psychology", definitions: ["A school of thought that looks at the human mind and behavior as a whole."] },
+                { word: "Humanistic psychology", definitions: ["A psychological perspective that emphasizes the study of the whole person."] },
+                { word: "Introversion", definitions: ["The quality of a shy and reticent person."] },
+                { word: "Neuropsychology", definitions: ["The study of the relationship between brain and behavior."] },
+                { word: "Personality disorder", definitions: ["A type of mental disorder in which you have a rigid and unhealthy pattern of thinking, functioning and behaving."] },
+                { word: "Placebo effect", definitions: ["A beneficial effect produced by a placebo drug or treatment, which cannot be attributed to the properties of the placebo itself, and must therefore be ascribed to the patient's belief in that treatment."] },
+                { word: "Projection", definitions: ["A defense mechanism in which a person attributes their own unacceptable thoughts or feelings to another person."] },
+                { word: "Rationalization", definitions: ["A defense mechanism in which controversial behaviors or feelings are justified and explained in a seemingly rational or logical manner to avoid the true explanation."] },
+                { word: "Repression", definitions: ["The psychological attempt to direct one's own desires and impulses toward pleasurable instincts by excluding the desire from one's consciousness and holding or subduing it in the unconscious."] },
+                { word: "Self-efficacy", definitions: ["An individual's belief in his or her capacity to execute behaviors necessary to produce specific performance attainments."] },
+                { word: "Social psychology", definitions: ["The branch of psychology that deals with social interactions, including their origins and their effects on the individual."] },
+                { word: "Stimulus", definitions: ["A thing or event that evokes a specific functional reaction in an organ or tissue."] },
+                { word: "Trait theory", definitions: ["An approach to the study of human personality."] },
+                { word: "Unconscious mind", definitions: ["A reservoir of feelings, thoughts, urges, and memories that are outside of conscious awareness."] },
+                { word: "Validation", definitions: ["The recognition or affirmation that a person's feelings or opinions are valid or worthwhile."] },
+                { word: "Well-being", definitions: ["The state of being comfortable, healthy, or happy."] }
+			],
+			"adjectives": [
+                { word: "Adorable", definitions: ["Inspiring great affection; delightful."] },
+                { word: "Brave", definitions: ["Ready to face and endure danger or pain; showing courage."] },
+                { word: "Calm", definitions: ["Not showing or feeling nervousness, anger, or other emotions."] },
+                { word: "Dazzling", definitions: ["Extremely impressive, beautiful, or attractive."] },
+                { word: "Elegant", definitions: ["Graceful and stylish in appearance or manner."] },
+                { word: "Fantastic", definitions: ["Extraordinarily good or attractive."] },
+                { word: "Gentle", definitions: ["Having or showing a mild, kind, or tender temperament or character."] },
+                { word: "Harmonious", definitions: ["Tuneful; not discordant."] },
+                { word: "Incredible", definitions: ["Difficult to believe; extraordinary."] },
+                { word: "Jolly", definitions: ["Happy and cheerful."] },
+                { word: "Kind", definitions: ["Having or showing a friendly, generous, and considerate nature."] },
+                { word: "Lively", definitions: ["Full of life and energy; active and outgoing."] },
+                { word: "Magnificent", definitions: ["Extremely beautiful, elaborate, or impressive."] },
+                { word: "Nice", definitions: ["Pleasant or agreeable."] },
+                { word: "Optimistic", definitions: ["Hopeful and confident about the future."] },
+                { word: "Peaceful", definitions: ["Free from disturbance; tranquil."] },
+                { word: "Quiet", definitions: ["Making little or no noise."] },
+                { word: "Radiant", definitions: ["Sending out light; shining or glowing brightly."] },
+                { word: "Splendid", definitions: ["Magnificent; very impressive."] },
+                { word: "Thankful", definitions: ["Expressing gratitude; appreciative."] },
+	        	{ word: "Vivacious", definitions: ["Attractive and lively."] },
+	         	{ word: "Witty", definitions: ["Showing or characterized by quick and inventive verbal humour."] },
+	         	{ word: "Zealous", definitions: ["Full of energy, enthusiasm, or intensity."] },
+	        	{ word: "Amusing", definitions: ["Causing laughter or providing entertainment."] },
+	        	{ word: "Blissful", definitions: ["Extremely happy; full of joy."] },
+		        { word: "Charming", definitions: ["Very pleasant or attractive."] },
+	        	{ word: "Delightful", definitions: ["Very pleasing."] },
+		        { word: "Enchanting", definitions: ["Delightfully charming or attractive."] },
+		        { word: "Fabulous", definitions: ["Extraordinarily good or pleasing."] },
+		        { word: "Glamorous", definitions: ["Attractive in a exciting and special way."] },
+		        { word: "Heavenly", definitions: ["Resembling heaven; very beautiful or delightful."] },
+		        { word: "Jubilant", definitions: ["Feeling or expressing great happiness and triumph."] },
+		        { word: "Keen", definitions: ["Highly developed."] },
+		        { word: "Luminous", definitions: ["Full of light."] },
+		        { word: "Marvelous", definitions: ["Causing great wonder; extraordinary."] },
+		        { word: "Nifty", definitions: ["Particularly good, skillful, or effective."] },
+		        { word: "Outstanding", definitions: ["Exceptionally good."] },
+		        { word: "Precious", definitions: ["Of great value."] },
+		        { word: "Quaint", definitions: ["Attractively unusual or old-fashioned."] },
+		        { word: "Resilient", definitions: ["Able to withstand or recover quickly from difficult conditions."] },
+		        { word: "Serene", definitions: ["Calm, peaceful, and untroubled; tranquil."] },
+		        { word: "Tasteful", definitions: ["Attractive and of good quality."] },
+		        { word: "Upbeat", definitions: ["Cheerful; optimistic."] },
+		        { word: "Vibrant", definitions: ["Full of energy and enthusiasm."] },
+		        { word: "Whimsical", definitions: ["Playfully quaint or fanciful, especially in an appealing and amusing way."] },
+		        { word: "Youthful", definitions: ["Having the appearance, energy, or freshness of youth; young."] },
+		        { word: "Amiable", definitions: ["Having or displaying a friendly and pleasant manner."] },
+		        { word: "Bold", definitions: ["(of a person, action, or idea) showing an ability to take risks; confident and courageous."] },
+		        { word: "Creative", definitions: ["Relating to or involving the use of the imagination or original ideas to create something."] },
+		        { word: "Daring", definitions: ["Adventurous and unafraid."] }
+            ],
+            "academicVocabulary": [
+                { word: "Analyze", definitions: ["Examine methodically and in detail the constitution or structure of (something, especially information), typically for purposes of explanation and interpretation."] },
+                { word: "Assess", definitions: ["Evaluate or estimate the nature, ability, or quality of."] },
+                { word: "Cite", definitions: ["Quote (a passage, book, or author) as evidence for or justification of an argument or statement, especially in a scholarly work."] },
+                { word: "Compare", definitions: ["Estimate, measure, or note the similarity or dissimilarity between."] },
+                { word: "Contrast", definitions: ["The state of being strikingly different from something else in juxtaposition or close association."] },
+                { word: "Define", definitions: ["State or describe exactly the nature, scope, or meaning of."] },
+                { word: "Demonstrate", definitions: ["Clearly show the existence or truth of (something) by giving proof or evidence."] },
+                { word: "Describe", definitions: ["Give an account in words of (someone or something), including all the relevant characteristics, qualities, or events."] },
+                { word: "Evaluate", definitions: ["Form an idea of the amount, number, or value of; assess."] },
+                { word: "Explain", definitions: ["Make (an idea, situation, or problem) clear to someone by describing it in more detail or revealing relevant facts or ideas."] },
+                { word: "Identify", definitions: ["Establish or indicate who or what (someone or something) is."] },
+                { word: "Illustrate", definitions: ["Explain or make (something) clear by using examples, charts, pictures, etc."] },
+                { word: "Interpret", definitions: ["Explain the meaning of (information, words, or actions)."] },
+                { word: "Justify", definitions: ["Show or prove to be right or reasonable."] },
+                { word: "Outline", definitions: ["Give a brief account or summary."] },
+                { word: "Predict", definitions: ["Say or estimate that (a specified thing) will happen in the future or will be a consequence of something."] },
+                { word: "Review", definitions: ["Assess (something) formally with the intention of instituting change if necessary."] },
+                { word: "Summarize", definitions: ["Give a brief statement of the main points of (something)."] },
+                { word: "Synthesize", definitions: ["Combine (a number of things) into a coherent whole."] },
+                { word: "Trace", definitions: ["Find or discover by investigation."] },
+				{ word: "Abstract", definitions: ["Existing in thought or as an idea but not having a physical or concrete existence."] },
+                { word: "Argument", definitions: ["A reason or set of reasons given with the aim of persuading others that an action or idea is right or wrong."] },
+                { word: "Assumption", definitions: ["A thing that is accepted as true or as certain to happen, without proof."] },
+                { word: "Concept", definitions: ["An abstract idea; a general notion."] },
+                { word: "Conclude", definitions: ["Arrive at a judgment or opinion by reasoning."] },
+                { word: "Context", definitions: ["The circumstances that form the setting for an event, statement, or idea, and in terms of which it can be fully understood."] },
+                { word: "Critique", definitions: ["A detailed analysis and assessment of something, especially a literary, philosophical, or political theory."] },
+                { word: "Data", definitions: ["Facts and statistics collected together for reference or analysis."] },
+                { word: "Hypothesis", definitions: ["A supposition or proposed explanation made on the basis of limited evidence as a starting point for further investigation."] },
+                { word: "Implication", definitions: ["The conclusion that can be drawn from something although it is not explicitly stated."] },
+                { word: "Inference", definitions: ["A conclusion reached on the basis of evidence and reasoning."] },
+                { word: "Methodology", definitions: ["A system of methods used in a particular area of study or activity."] },
+                { word: "Perspective", definitions: ["A particular attitude toward or way of regarding something."] },
+                { word: "Principle", definitions: ["A fundamental truth or proposition that serves as the foundation for a system of belief or behavior or for a chain of reasoning."] },
+                { word: "Relevant", definitions: ["Closely connected or appropriate to what is being done or considered."] },
+                { word: "Significance", definitions: ["The quality of being worthy of attention; importance."] },
+                { word: "Source", definitions: ["A place, person, or thing from which something comes or can be obtained."] },
+                { word: "Structure", definitions: ["The arrangement of and relations between the parts or elements of something complex."] },
+                { word: "Theory", definitions: ["A supposition or a system of ideas intended to explain something, especially one based on general principles independent of the thing to be explained."] },
+                { word: "Validate", definitions: ["Demonstrate or support the truth or value of."] }
+            ],
+            "vocabulary": [
+                { word: "Ubiquitous", definitions: ["Present, appearing, or found everywhere."] },
+                { word: "Ephemeral", definitions: ["Lasting for a very short time."] },
+                { word: "Esoteric", definitions: ["Intended for or likely to be understood by only a small number of people with a specialized knowledge or interest."] },
+                { word: "Laconic", definitions: ["Using very few words."] },
+                { word: "Pernicious", definitions: ["Having a harmful effect, especially in a gradual or subtle way."] },
+                { word: "Gregarious", definitions: ["Fond of company; sociable."] },
+                { word: "Obsequious", definitions: ["Obedient or attentive to an excessive or servile degree."] },
+                { word: "Prodigal", definitions: ["Wastefully extravagant."] },
+                { word: "Quixotic", definitions: ["Exceedingly idealistic; unrealistic and impractical."] },
+                { word: "Reticent", definitions: ["Not revealing one's thoughts or feelings readily."] },
+                { word: "Sycophant", definitions: ["A person who acts obsequiously toward someone important in order to gain advantage."] },
+                { word: "Taciturn", definitions: ["Reserved or uncommunicative in speech; saying little."] },
+                { word: "Unctuous", definitions: ["Excessively flattering or ingratiating."] },
+                { word: "Voracious", definitions: ["Wanting or devouring great quantities of food."] },
+                { word: "Winsome", definitions: ["Attractive or appealing in appearance or character."] },
+                { word: "Zealous", definitions: ["Having or showing great energy or enthusiasm in pursuit of a cause or objective."] },
+                { word: "Astute", definitions: ["Having or showing an ability to accurately assess situations or people and turn this to one's advantage."] },
+                { word: "Benevolent", definitions: ["Well meaning and kindly."] },
+                { word: "Candid", definitions: ["Truthful and straightforward; frank."] },
+                { word: "Deference", definitions: ["Humble submission and respect."] },
+                { word: "Apathy", definitions: ["Lack of interest, enthusiasm, or concern."] },
+                { word: "Ambiguous", definitions: ["Open to more than one interpretation; having a double meaning."] },
+                { word: "Capricious", definitions: ["Given to sudden and unaccountable changes of mood or behavior."] },
+                { word: "Didactic", definitions: ["Intended to teach, particularly in having moral instruction as an ulterior motive."] },
+                { word: "Eloquent", definitions: ["Fluent or persuasive in speaking or writing."] },
+                { word: "Fastidious", definitions: ["Very attentive to and concerned about accuracy and detail."] },
+                { word: "Garrulous", definitions: ["Excessively talkative, especially on trivial matters."] },
+                { word: "Hypocrisy", definitions: ["The practice of claiming to have moral standards or beliefs to which one's own behavior does not conform."] },
+                { word: "Incorrigible", definitions: ["Not able to be corrected, improved, or reformed."] },
+                { word: "Juxtapose", definitions: ["Place or deal with close together for contrasting effect."] },
+                { word: "Knell", definitions: ["The sound of a bell, especially when rung solemnly for a death or funeral."] },
+                { word: "Lethargic", definitions: ["Affected by lethargy; sluggish and apathetic."] },
+                { word: "Mellifluous", definitions: ["(of a voice or words) sweet or musical; pleasant to hear."] },
+                { word: "Nebulous", definitions: ["In the form of a cloud or haze; hazy."] },
+                { word: "Onerous", definitions: ["(of a task or responsibility) involving a great deal of effort, trouble, or difficulty."] },
+                { word: "Palliative", definitions: ["(of a treatment or medicine) relieving pain or alleviating a problem without dealing with the underlying cause."] },
+                { word: "Querulous", definitions: ["Complaining in a petulant or whining manner."] },
+                { word: "Rancorous", definitions: ["Characterized by bitterness or resentment."] },
+                { word: "Salubrious", definitions: ["Health-giving; healthy."] },
+                { word: "Tenacious", definitions: ["Tending to keep a firm hold of something; clinging or adhering closely."] },
+                { word: "Ubiquitous", definitions: ["Present, appearing, or found everywhere."] },
+                { word: "Voracity", definitions: ["Exceedingly eager or avid."] },
+                { word: "Wary", definitions: ["Feeling or showing caution about possible dangers or problems."] },
+                { word: "Xenial", definitions: ["Of, relating to, or constituting hospitality, especially as shown to a guest or stranger."] },
+                { word: "Yearning", definitions: ["A feeling of intense longing for something."] },
+                { word: "Zenith", definitions: ["The time at which something is most powerful or successful."] },
+                { word: "Abnegation", definitions: ["The act of renouncing or rejecting something."] },
+                { word: "Bombastic", definitions: ["High-sounding but with little meaning."] },
+                { word: "Cacophony", definitions: ["A harsh, discordant mixture of sounds."] }
+            ],
+            "finance": [
+                { word: "Asset", definitions: ["A resource with economic value that an individual, company, or organization owns or controls with the expectation that it will provide future benefit."] },
+                { word: "Liability", definitions: ["A company's legal debts or obligations that arise during the course of business operations."] },
+                { word: "Equity", definitions: ["The value of an asset less the value of all liabilities on that asset."] },
+                { word: "Revenue", definitions: ["The income generated from normal business operations."] },
+                { word: "Expense", definitions: ["The cost of operations that a company incurs to generate revenue."] },
+                { word: "Profit", definitions: ["A financial benefit that is realized when the amount of revenue gained from a business activity exceeds the expenses, costs, and taxes needed to sustain the activity."] },
+                { word: "Budget", definitions: ["An estimation of revenue and expenses over a specified future period of time."] },
+                { word: "Investment", definitions: ["An asset or item acquired with the goal of generating income or appreciation."] },
+                { word: "Dividend", definitions: ["A distribution of a portion of a company's earnings, decided by the board of directors, to a class of its shareholders."] },
+                { word: "Interest", definitions: ["The charge for the privilege of borrowing money, typically expressed as an annual percentage rate."] },
+                { word: "Inflation", definitions: ["The rate at which the general level of prices for goods and services is rising, and subsequently, purchasing power is falling."] },
+                { word: "Deflation", definitions: ["A decrease in the general price level of goods and services."] },
+                { word: "Recession", definitions: ["A significant decline in economic activity spread across the economy, lasting more than a few months, normally visible in real GDP, real income, employment, industrial production, and wholesale-retail sales."] },
+                { word: "Depression", definitions: ["A sustained, long-term downturn in economic activity in one or more economies."] },
+                { word: "Stock", definitions: ["A type of security that signifies ownership in a corporation and represents a claim on part of the corporation's assets and earnings."] },
+                { word: "Bond", definitions: ["A debt security, similar to an IOU."] },
+				{ word: "Amortization", definitions: ["The process of gradually writing off the initial cost of an intangible asset or the gradual repayment of a loan principal over time."] },
+                { word: "Capital", definitions: ["Financial assets or the value of assets, such as cash and equipment."] },
+                { word: "Credit", definitions: ["An agreement to obtain money, goods, or services now in exchange for a promise to pay in the future."] },
+                { word: "Debit", definitions: ["An entry recording a sum owed, listed on the left-hand side or column of an account."] },
+                { word: "Diversification", definitions: ["A risk management strategy that mixes a wide variety of investments within a portfolio."] },
+                { word: "Fiscal policy", definitions: ["The use of government spending and taxation to influence the economy."] },
+                { word: "Hedge fund", definitions: ["A pooled investment fund that uses less regulated investment strategies than mutual funds."] },
+                { word: "Index fund", definitions: ["A type of mutual fund or exchange-traded fund (ETF) with a portfolio constructed to match or track the components of a financial market index."] },
+                { word: "Liquidity", definitions: ["The degree to which an asset or security can be quickly bought or sold in the market without affecting the asset's price."] },
+                { word: "Monetary policy", definitions: ["Actions undertaken by a central bank to manipulate the money supply and credit conditions to stimulate or restrain economic activity."] },
+                { word: "Mortgage", definitions: ["A debt instrument, secured by the collateral of specified real estate property, that the borrower is obliged to pay back with a predetermined set of payments."] },
+                { word: "Mutual fund", definitions: ["A company that pools money from many investors and invests the money in securities such as stocks, bonds, and money market instruments."] },
+                { word: "Portfolio", definitions: ["A collection of financial investments like stocks, bonds, commodities, cash, and cash equivalents, as well as their fund counterparts."] },
+                { word: "Principal", definitions: ["The original sum of money borrowed or invested, separate from interest or earnings."] },
+                { word: "Risk", definitions: ["The probability or threat of damage, injury, liability, loss, or any other negative occurrence that is caused by external or internal vulnerabilities, and that may be neutralized through preemptive action."] },
+                { word: "Securities", definitions: ["A fungible, negotiable financial instrument that represents some type of financial value."] },
+                { word: "Shareholder", definitions: ["An individual or institution that legally owns one or more shares of stock in a public or private corporation."] },
+                { word: "Spread", definitions: ["The difference between the bid price and the ask price of a security or asset."] },
+                { word: "Yield", definitions: ["The return on an investment, expressed as a percentage of its price or cost."] },
+                { word: "Zero-coupon bond", definitions: ["A debt instrument that does not pay periodic interest but instead is sold at a discount, offering profit at maturity when the bond is redeemed at its face value."] }
+            ] 
+        };
+
+        function startGame(category) {
+            currentCategory = category;
+            totalQuestions = parseInt(questionCountSelect.value);
+            questionsAnswered = 0;
+            score = 0;
+            scoreElement.textContent = `Score: ${score}`;
+            askedWords.clear();
+            categorySelect.style.display = 'none';
+            gameArea.style.display = 'block';
+            gameOverArea.style.display = 'none';
+            loadQuestion();
+        }
+
+        async function fetchWordData() {
+            loadingMessage.style.display = 'block';
+            definitionElement.textContent = '';
+            optionsContainer.innerHTML = '';
+
+            let currentWordData;
+            if (currentCategory && categorizedWordLists[currentCategory]) {
+                const availableWords = categorizedWordLists[currentCategory].filter(wordObj => !askedWords.has(wordObj.word));
+                if (availableWords.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * availableWords.length);
+                    currentWordData = availableWords[randomIndex];
+                    askedWords.add(currentWordData.word);
+                } else {
+                    loadingMessage.style.display = 'none';
+                    definitionElement.textContent = `⚠️ No more words available in the "${currentCategory}" category. Please try another category.`;
+                    return null;
+                }
+            } else {
+                loadingMessage.style.display = 'none';
+                definitionElement.textContent = "⚠️ Error: Category not selected or found.";
+                return null;
+            }
+
+            loadingMessage.style.display = 'none';
+            return currentWordData;
+        }
+
+        async function loadQuestion() {
+            if (questionsAnswered >= totalQuestions) {
+                endGame();
+                return;
+            }
+
+            const wordData = await fetchWordData();
+            if (!wordData) return;
+
+            currentQuestion = wordData;
+            definitionElement.textContent = currentQuestion.definitions.join(" ➡️ ") || "No definition found.";
+
+            const correctAnswer = currentQuestion.word;
+            const options = await generateOptions(correctAnswer, currentCategory);
+            if (!options) return;
+
+            // Ensure the correct answer is in the options and shuffle them
+            if (!options.includes(correctAnswer)) {
+                const randomIndexToReplace = Math.floor(Math.random() * options.length);
+                options[randomIndexToReplace] = correctAnswer;
+            }
+            shuffleArray(options);
+
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-button');
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(option, correctAnswer));
+                optionsContainer.appendChild(button);
+            });
+
+            feedbackElement.textContent = ''; // Clear previous feedback
+        }
+
+        async function generateOptions(correctAnswer, category) {
+            const options = new Set([correctAnswer]);
+            const numberOfOptions = 4;
+            const wordList = categorizedWordLists[category];
+
+            if (!wordList) {
+                console.warn(`Word list not found for category: ${category}`);
+                return Array.from(options);
+            }
+
+            while (options.size < numberOfOptions) {
+                const randomIndex = Math.floor(Math.random() * wordList.length);
+                const randomWord = wordList[randomIndex].word;
+                if (randomWord !== correctAnswer && !options.has(randomWord)) {
+                    options.add(randomWord);
+                }
+                // Basic safeguard against infinite loops
+                if (options.size < numberOfOptions && options.size + askedWords.size > wordList.length + 5) {
+                    console.warn("Could not generate enough unique options from the category.");
+                    break;
+                }
+            }
+            return Array.from(options).slice(0, numberOfOptions); // Ensure we have exactly 4 options
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer) {
+            if (selectedAnswer === correctAnswer) {
+                feedbackElement.textContent = "✅ Correct! You're a word whiz! ✨";
+                feedbackElement.classList.remove('incorrect');
+                feedbackElement.classList.add('correct');
+                score++;
+                scoreElement.textContent = `Score: ${score}`;
+            } else {
+                feedbackElement.textContent = `❌ Nope! The correct answer was "${correctAnswer}". Keep trying! 💪`;
+                feedbackElement.classList.remove('correct');
+                feedbackElement.classList.add('incorrect');
+            }
+            questionsAnswered++;
+            setTimeout(loadQuestion, 1500); // Load next question after a short delay
+        }
+
+        function endGame() {
+            gameArea.style.display = 'none';
+            gameOverArea.style.display = 'block';
+            finalScoreElement.textContent = `Your final score: ${score} out of ${totalQuestions}`;
+            achievementEmojiElement.textContent = getAchievementEmoji(score / totalQuestions);
+        }
+
+        function getAchievementEmoji(percentage) {
+            if (percentage === 1) return "🏆🌟💯";
+            else if (percentage >= 0.8) return "🥇✨🥳";
+            else if (percentage >= 0.6) return "🥈👏😊";
+            else if (percentage >= 0.4) return "🥉👍🤔";
+            else return "😥 Keep trying!";
+        }
+
+        function resetGame() {
+            currentCategory = null;
+            gameArea.style.display = 'none';
+            gameOverArea.style.display = 'none';
+            categorySelect.style.display = 'block';
+            score = 0;
+            scoreElement.textContent = `Score: ${score}`;
+            definitionElement.textContent = '';
+            optionsContainer.innerHTML = '';
+            feedbackElement.textContent = '';
+            askedWords.clear();
+            totalQuestions = 0;
+            questionsAnswered = 0;
+        }
+
+        // Basic Fisher-Yates shuffle algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+    </script>
+</body>
+</html>
