@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Phone Motion (3D)</title>
+    <title>Interactive Phone Motion (Touch/Mouse Only)</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js library -->
@@ -63,42 +63,15 @@
             font-size: 0.875rem; /* Smaller text for notes */
             text-align: center;
         }
-        #permissionButton {
-            margin-top: 1.5rem;
-            padding: 0.75rem 1.5rem;
-            background-color: #4CAF50; /* Green */
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1.125rem;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        #permissionButton:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-        }
-        #permissionButton:active {
-            transform: translateY(0);
-        }
-        .hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <div class="container">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-6">Interactive Phone Display (3D)</h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6">Interactive Phone Display</h1>
 
         <!-- Hidden HTML Video Element - serves as the source for Three.js texture -->
-        <!-- Added crossOrigin="anonymous" which is crucial for WebGL textures with videos -->
         <video id="phoneVideoHTML" preload="auto" muted playsinline webkit-playsinline loop crossOrigin="anonymous">
-            <!--
-                YOUR VIDEO URL HAS BEEN UPDATED HERE:
-                This video element will be hidden but its frames will be used by Three.js.
-            -->
             <source src="https://evanderq94.github.io/Word_Wizard/wallpaper.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -109,13 +82,10 @@
         <p id="instructionText" class="instruction-text">
             Move your mouse or finger left and right over the video area to control the phone's motion!
             It will stay at the last position when your pointer is over it, or return to center when off it.
-            On mobile, enable gyroscope for tilt control.
         </p>
 
-        <button id="permissionButton" class="hidden">Enable Gyroscope Control</button>
-
         <p class="note-text">
-            **Important:** The video URL has been updated to your GitHub-hosted MP4 file.
+            **Important:** The video URL is `https://evanderq94.github.io/Word_Wizard/wallpaper.mp4`.
             The `crossOrigin="anonymous"` attribute is necessary for `three.js` to use the video as a texture.
             If the video doesn't load, double-check the file name and path in your GitHub repository.
         </p>
@@ -127,7 +97,6 @@
         const threeJsCanvas = document.getElementById('threeJsCanvas'); // The canvas for Three.js rendering
         const videoWrapper = threeJsCanvas.parentElement; // The container div wrapping the canvas
         const instructionText = document.getElementById('instructionText');
-        const permissionButton = document.getElementById('permissionButton');
 
         // --- Three.js Variables ---
         let scene, camera, renderer;
@@ -141,9 +110,6 @@
         const returnSpeed = 0.05; // How fast the video returns to center/stabilizes
         let targetVideoTime = 0; // Where the video *should* be based on input or auto-center
 
-        let deviceOrientationActive = false; // State for gyroscope control
-        const GYRO_SENSITIVITY = 45; // Max degrees of tilt (e.g., 45 degrees left/right) for full video range
-
         // --- Three.js Initialization ---
         function initThreeJS() {
             console.log("[THREE.JS] Initializing Three.js...");
@@ -152,7 +118,7 @@
 
             // Camera setup (PerspectiveCamera is good for realistic views)
             camera = new THREE.PerspectiveCamera(75, threeJsCanvas.clientWidth / threeJsCanvas.clientHeight, 0.1, 1000);
-            camera.position.z = 2; // Position camera to see the plane
+            camera.position.z = 1; // Start a bit closer for fitting calculation
 
             // Renderer setup
             renderer = new THREE.WebGLRenderer({ canvas: threeJsCanvas, antialias: true });
@@ -168,16 +134,18 @@
             console.log("[THREE.JS] VideoTexture created from HTML video element.");
 
             // Plane Geometry to display the video
-            // It's crucial to get videoWidth/Height after metadata loads
             const videoAspect = phoneVideoHTML.videoWidth / phoneVideoHTML.videoHeight;
-            const planeHeight = 1; // Arbitrary height for the plane
-            const planeWidth = planeHeight * videoAspect;
+            let planeWidth = 1; // Arbitrary starting size
+            let planeHeight = planeWidth / videoAspect;
 
             const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
             const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
             videoPlane = new THREE.Mesh(geometry, material);
             scene.add(videoPlane);
-            console.log(`[THREE.JS] Plane created with aspect ratio: ${videoAspect.toFixed(2)}`);
+            console.log(`[THREE.JS] Initial Plane created with aspect ratio: ${videoAspect.toFixed(2)}`);
+
+            // Initial fit adjustment
+            fitCameraToPlane();
 
             // Handle window resizing to keep Three.js responsive
             window.addEventListener('resize', onWindowResize, false);
@@ -190,10 +158,39 @@
             const height = threeJsCanvas.clientHeight;
 
             camera.aspect = width / height;
-            camera.updateProjectionMatrix();
+            camera.updateProjectionMatrix(); // Important to update projection matrix after aspect change
             renderer.setSize(width, height);
+
+            // Re-fit the camera to the plane whenever the window resizes
+            fitCameraToPlane();
             console.log(`[THREE.JS] Canvas resized to: ${width}x${height}`);
         }
+
+        // --- Function to fit the camera to the plane ---
+        function fitCameraToPlane() {
+            if (!camera || !videoPlane || !videoDuration) return; // Ensure everything is initialized
+
+            const object = videoPlane;
+            const fov = camera.fov;
+            const aspect = camera.aspect;
+
+            const box = new THREE.Box3().setFromObject(object);
+            const size = box.getSize(new THREE.Vector3());
+
+            const objectAspect = size.x / size.y;
+
+            let distanceToFit = 0;
+            if (objectAspect > aspect) { // Object is relatively wider than the canvas view
+                distanceToFit = (size.x / 2) / Math.tan(THREE.MathUtils.degToRad(fov / 2) * aspect);
+            } else { // Object is relatively taller than the canvas view
+                distanceToFit = (size.y / 2) / Math.tan(THREE.MathUtils.degToRad(fov / 2));
+            }
+
+            camera.position.z = distanceToFit + (distanceToFit * 0.1); // 10% buffer
+            camera.updateProjectionMatrix();
+            console.log(`[THREE.JS] Camera re-fitted. New Z: ${camera.position.z.toFixed(2)}`);
+        }
+
 
         // --- Core Animation Loop ---
         function animateVideoProgress() {
@@ -206,9 +203,7 @@
             let currentVideoTime = phoneVideoHTML.currentTime;
             let finalTargetTime;
 
-            if (deviceOrientationActive) {
-                finalTargetTime = targetVideoTime;
-            } else if (isPointerOverVideo) {
+            if (isPointerOverVideo) {
                 finalTargetTime = targetVideoTime;
             } else {
                 finalTargetTime = videoDuration / 2;
@@ -219,7 +214,6 @@
             if (Math.abs(difference) < 0.01) {
                 phoneVideoHTML.currentTime = finalTargetTime;
                 animationFrameId = null;
-                // console.log("[ANIM] Animation settled at:", phoneVideoHTML.currentTime.toFixed(2));
             } else {
                 currentVideoTime += difference * returnSpeed;
                 phoneVideoHTML.currentTime = currentVideoTime;
@@ -244,7 +238,7 @@
         // --- Video Time Calculation Functions ---
 
         function setTargetVideoTimeFromPointer(clientX) {
-            if (videoDuration === 0 || deviceOrientationActive) return;
+            if (videoDuration === 0) return; // Removed deviceOrientationActive check
 
             const rect = threeJsCanvas.getBoundingClientRect();
             let relativeX = clientX - rect.left;
@@ -254,59 +248,7 @@
             ensureAnimationLoopRunning();
         }
 
-        function setTargetVideoTimeFromGyro(gamma) {
-            if (videoDuration === 0) return;
-
-            gamma = Math.max(-GYRO_SENSITIVITY, Math.min(GYRO_SENSITIVITY, gamma));
-            let normalizedGamma = (gamma + GYRO_SENSITIVITY) / (2 * GYRO_SENSITIVITY);
-
-            targetVideoTime = normalizedGamma * videoDuration;
-            ensureAnimationLoopRunning();
-        }
-
-        // --- Device Orientation (Gyroscope) Handling ---
-
-        function handleDeviceOrientation(event) {
-            if (event.gamma !== null && event.gamma !== undefined) {
-                setTargetVideoTimeFromGyro(event.gamma);
-            }
-        }
-
-        function requestGyroscopePermission() {
-            console.log("[GYRO] Attempting to request gyroscope permission...");
-            if (typeof DeviceOrientationEvent !== 'undefined' &&
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        console.log("[GYRO] Permission state:", permissionState);
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleDeviceOrientation);
-                            deviceOrientationActive = true;
-                            instructionText.textContent = "Tilt your phone left or right to control the motion!";
-                            permissionButton.classList.add('hidden');
-                            threeJsCanvas.style.cursor = 'default';
-                            console.log("[GYRO] Gyroscope permission granted. Device orientation active.");
-                        } else {
-                            instructionText.textContent = "Gyroscope permission denied. Use touch/mouse to control.";
-                            permissionButton.classList.remove('hidden');
-                            console.log("[GYRO] Gyroscope permission denied.");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("[GYRO] Gyroscope permission error:", error);
-                        instructionText.textContent = "Error enabling gyroscope. Try refreshing or use touch/mouse.";
-                        permissionButton.classList.remove('hidden');
-                    });
-            } else {
-                console.log("[GYRO] DeviceOrientationEvent.requestPermission not available. Adding listener directly.");
-                window.addEventListener('deviceorientation', handleDeviceOrientation);
-                deviceOrientationActive = true;
-                instructionText.textContent = "Tilt your phone left or right to control the motion!";
-                permissionButton.classList.add('hidden');
-                threeJsCanvas.style.cursor = 'default';
-                console.log("[GYRO] Gyroscope listener added directly. Device orientation active.");
-            }
-        }
+        // --- Removed Gyroscope related functions and event listeners ---
 
         // --- Initial Setup and Event Listeners ---
 
@@ -323,30 +265,25 @@
 
             targetVideoTime = videoDuration / 2;
             phoneVideoHTML.currentTime = targetVideoTime;
-            phoneVideoHTML.pause(); // Ensure HTML video is paused to control via currentTime
 
-            // This play/pause sequence is important for mobile browsers to allow texture updates
-            // It tries to play, then immediately pauses. This "primes" the video for WebGL.
             phoneVideoHTML.play().then(() => {
-                console.log("[VIDEO] Initial play() success, now pausing.");
-                phoneVideoHTML.pause();
+                console.log("[VIDEO] Initial play() success. Video is now playing (hidden).");
             }).catch(e => {
                 if (e.name !== "AbortError") {
                     console.error("[VIDEO] Initial play() failed (likely due to user interaction requirement):", e);
                     instructionText.textContent = "Tap the video area to start interaction!";
-                    // Add a click listener to explicitly play/pause the video if autoplay failed
                     threeJsCanvas.addEventListener('click', function onCanvasClick() {
                         if (phoneVideoHTML.paused) {
                             phoneVideoHTML.play().then(() => {
-                                phoneVideoHTML.pause(); // Prime again
+                                console.log("[VIDEO] Video primed on user click.");
                                 instructionText.textContent = "Move your mouse or finger left and right over the video area...";
-                                threeJsCanvas.removeEventListener('click', onCanvasClick); // Remove listener once primed
+                                threeJsCanvas.removeEventListener('click', onCanvasClick);
                             }).catch(err => {
                                 console.error("Failed to play video on canvas click:", err);
                                 instructionText.textContent = "Still unable to play video. Check browser settings.";
                             });
                         }
-                    });
+                    }, { once: true });
                 } else {
                     console.warn("[VIDEO] Initial play() aborted by pause(). This is expected for texture priming.");
                 }
@@ -354,18 +291,7 @@
 
             console.log(`[VIDEO] Metadata loaded. Duration: ${videoDuration.toFixed(2)}s. Initial Time: ${phoneVideoHTML.currentTime.toFixed(2)}s.`);
 
-            // Request gyroscope permission after video is ready
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                permissionButton.classList.remove('hidden');
-                instructionText.textContent = "Tap 'Enable Gyroscope' for tilt control (iOS).";
-                permissionButton.addEventListener('click', requestGyroscopePermission);
-                console.log("[SETUP] iOS detected, showing permission button.");
-            } else {
-                requestGyroscopePermission();
-                console.log("[SETUP] Non-iOS detected, attempting direct gyroscope activation.");
-            }
-
-            ensureAnimationLoopRunning(); // Start the Three.js render loop and video control animation
+            ensureAnimationLoopRunning();
         });
 
         phoneVideoHTML.addEventListener('error', (e) => {
@@ -373,20 +299,11 @@
             let errorMsg = "Error loading video. Please ensure the video URL is correct and the file exists.";
             if (e.target && e.target.error) {
                 switch (e.target.error.code) {
-                    case e.target.error.MEDIA_ERR_NETWORK:
-                        errorMsg = "Video: Network error occurred. Check your internet connection.";
-                        break;
-                    case e.target.error.MEDIA_ERR_DECODE:
-                        errorMsg = "Video: Playback error. The video might be corrupted or in an unsupported format.";
-                        break;
-                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                        errorMsg = "Video: Source not supported. Ensure the video format is MP4 and URL is correct.";
-                        break;
-                    case e.target.error.MEDIA_ERR_ABORTED:
-                        errorMsg = "Video: Fetching process aborted by user agent.";
-                        break;
-                    default:
-                        errorMsg = "Video: An unknown error occurred.";
+                    case e.target.error.MEDIA_ERR_NETWORK: errorMsg = "Video: Network error. Check internet."; break;
+                    case e.target.error.MEDIA_ERR_DECODE: errorMsg = "Video: Playback error. Format unsupported?"; break;
+                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: errorMsg = "Video: Source not supported. MP4 and URL correct?"; break;
+                    case e.target.error.MEDIA_ERR_ABORTED: errorMsg = "Video: Fetching aborted."; break;
+                    default: errorMsg = "Video: Unknown error.";
                 }
             }
             instructionText.textContent = errorMsg;
@@ -398,10 +315,8 @@
         threeJsCanvas.addEventListener('mouseenter', () => {
             console.log("[MOUSE] mouseenter. Pointer over canvas.");
             isPointerOverVideo = true;
-            if (!deviceOrientationActive) {
-                targetVideoTime = phoneVideoHTML.currentTime;
-                threeJsCanvas.style.cursor = 'ew-resize';
-            }
+            targetVideoTime = phoneVideoHTML.currentTime; // "Sticky" behavior when mouse enters
+            threeJsCanvas.style.cursor = 'ew-resize';
             ensureAnimationLoopRunning();
         });
 
@@ -409,9 +324,7 @@
             console.log("[MOUSE] mouseleave. Pointer off canvas.");
             isPointerOverVideo = false;
             ensureAnimationLoopRunning();
-            if (!deviceOrientationActive) {
-                 threeJsCanvas.style.cursor = 'default';
-            }
+            threeJsCanvas.style.cursor = 'default';
         });
 
         threeJsCanvas.addEventListener('mousemove', (e) => {
@@ -428,9 +341,7 @@
         threeJsCanvas.addEventListener('touchstart', (e) => {
             console.log(`[TOUCH] touchstart. Touches: ${e.touches[0].clientX}`);
             isPointerOverVideo = true;
-            if (!deviceOrientationActive) {
-                setTargetVideoTimeFromPointer(e.touches[0].clientX);
-            }
+            setTargetVideoTimeFromPointer(e.touches[0].clientX);
             e.preventDefault();
         }, { passive: false });
 
@@ -443,9 +354,7 @@
             console.log("[TOUCH] touchend. Pointer off canvas.");
             isPointerOverVideo = false;
             ensureAnimationLoopRunning();
-            if (!deviceOrientationActive) {
-                 threeJsCanvas.style.cursor = 'default';
-            }
+            threeJsCanvas.style.cursor = 'default';
         });
     </script>
 </body>
